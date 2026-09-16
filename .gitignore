@@ -1,11 +1,8 @@
 .env
+factoryops.db
 .venv/
+.venv*/
 __pycache__/
 *.pyc
-*.pyo
-*.pyd
-factoryops.db
-*.db
-*.sqlite
-*.sqlite3
 data/metropt3/MetroPT3(AirCompressor).csv
+docs
