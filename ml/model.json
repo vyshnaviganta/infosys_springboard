@@ -1,0 +1,28 @@
+{
+  "version": 2,
+  "model_type": "xgboost.XGBRegressor",
+  "feature_names": [
+    "temperature",
+    "pressure",
+    "vibration",
+    "voltage",
+    "current",
+    "power",
+    "rpm",
+    "humidity",
+    "oil_level",
+    "temperature_pressure_ratio",
+    "electrical_load",
+    "rpm_per_power",
+    "oil_depletion",
+    "thermal_vibration_index"
+  ],
+  "training_rows": 33,
+  "targets": {
+    "failure_probability": "telemetry.failure_probability",
+    "health_score": "telemetry.health_score",
+    "predicted_days": "derived from predicted failure probability; no RUL label exists"
+  },
+  "probability_model": "model_probability.json",
+  "health_model": "model_health.json"
+}
