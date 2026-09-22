@@ -13,7 +13,7 @@ from typing import Any, Literal
 import pandas as pd
 import streamlit as st
 
-from frontend import api, state
+from frontend import api, state, theme
 from frontend.transforms import ALERT_STATES, HEALTHY_STATES
 
 PRODUCT_NAME = "FactoryOps"
@@ -113,21 +113,29 @@ def render_header(health: dict[str, Any]) -> None:
                     )
 
         with account_col:
-            initials = "".join(part[0] for part in str(user.get("name", "U")).split()[:2]).upper()
-            with st.popover(f"{initials}  ·  {user.get('name', 'Account')}", width="stretch"):
-                _html(
-                    f'<div class="fo-metric-label">Signed in as</div>'
-                    f'<div style="font-weight:650;margin:.2rem 0 .1rem">{_esc(user.get("name", "User"))}</div>'
-                    f'<div style="font-size:.8rem;color:var(--muted);margin-bottom:.6rem">'
-                    f'{_esc(user.get("role", "User"))} · {_esc(user.get("username", ""))}</div>'
-                    f'<div style="margin-bottom:.7rem">{service_badge(health)}</div>'
-                )
-                if st.button("Refresh data", key="account_refresh", width="stretch"):
-                    api.clear_cache()
-                    st.rerun()
-                if st.button("Sign out", key="account_signout", type="primary", width="stretch"):
-                    state.sign_out()
-                    st.rerun()
+            toggle_col, profile_col = st.columns([0.9, 2.2], gap="small", vertical_alignment="center")
+            with toggle_col:
+                label = "Light" if state.current_theme() == state.THEME_DARK else "Dark"
+                st.button(label, key="theme_toggle", use_container_width=True, on_click=state.toggle_theme)
+            with profile_col:
+                initials = "".join(part[0] for part in str(user.get("name", "U")).split()[:2]).upper()
+                with st.popover(f"{initials}  ·  {user.get('name', 'Account')}", width="stretch"):
+                    _html(
+                        f'<div class="fo-metric-label">Signed in as</div>'
+                        f'<div style="font-weight:650;margin:.2rem 0 .1rem">{_esc(user.get("name", "User"))}</div>'
+                        f'<div style="font-size:.8rem;color:var(--muted);margin-bottom:.6rem">'
+                        f'{_esc(user.get("role", "User"))} · {_esc(user.get("username", ""))}</div>'
+                        f'<div style="margin-bottom:.7rem">{service_badge(health)}</div>'
+                    )
+                    if st.button("Refresh data", key="account_refresh", width="stretch"):
+                        api.clear_cache()
+                        st.rerun()
+                    if st.button("Toggle theme", key="account_theme", width="stretch"):
+                        state.toggle_theme()
+                        st.rerun()
+                    if st.button("Sign out", key="account_signout", type="primary", width="stretch"):
+                        state.sign_out()
+                        st.rerun()
 
 
 def service_badge(health: dict[str, Any]) -> str:
@@ -273,8 +281,40 @@ def data_table(
     if height is not None and len(frame) > _rows_that_fit(height):
         options["height"] = height
 
+    styled_frame = (
+        frame.style
+        .set_table_styles(
+            [
+                {
+                    "selector": "th",
+                    "props": [
+                        ("background-color", theme.COLORS["accent"]),
+                        ("color", "#FFFFFF"),
+                        ("font-weight", "700"),
+                        ("border-color", theme.COLORS["border_strong"]),
+                    ],
+                },
+                {
+                    "selector": "td",
+                    "props": [
+                        ("background-color", theme.COLORS["surface"]),
+                        ("color", theme.COLORS["text"]),
+                        ("border-color", theme.COLORS["border"]),
+                    ],
+                },
+            ]
+        )
+        .set_properties(
+            **{
+                "background-color": theme.COLORS["surface"],
+                "color": theme.COLORS["text"],
+                "border-color": theme.COLORS["border"],
+            }
+        )
+    )
+
     st.dataframe(
-        frame,
+        styled_frame,
         column_config=column_config or {},
         width="stretch",
         hide_index=True,
